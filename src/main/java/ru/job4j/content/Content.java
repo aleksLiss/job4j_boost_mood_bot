@@ -15,6 +15,14 @@ public class Content {
         this.chatId = chatId;
     }
 
+    public Content(Long chatId, String text, InputFile photo, InlineKeyboardMarkup markup, InputFile audio) {
+        this.chatId = chatId;
+        this.text = text;
+        this.photo = photo;
+        this.markup = markup;
+        this.audio = audio;
+    }
+
     public Long getChatId() {
         return chatId;
     }
