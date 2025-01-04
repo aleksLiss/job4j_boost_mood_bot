@@ -1,9 +1,7 @@
 package ru.job4j.content;
 
-
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.InputFile;
-
 import java.io.File;
 
 @Component

@@ -22,6 +22,18 @@ public class RecommendationEngine {
         return contents.get(index).byMood(chatId, moodId);
     }
 
+    private final List<ContentProvider> contents;
+    private static final Random RND = new Random(System.currentTimeMillis());
+
+    public RecommendationEngine(List<ContentProvider> contents) {
+        this.contents = contents;
+    }
+
+    public Content recommendFor(Long chatId, Long moodId) {
+        int index = RND.nextInt(0, contents.size());
+        return contents.get(index).byMood(chatId, moodId);
+    }
+
     @PostConstruct
     public void init() {
         System.out.println("Bean is going through @PostConstruct init.");

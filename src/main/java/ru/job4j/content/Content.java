@@ -14,6 +14,10 @@ public class Content {
         this.chatId = chatId;
     }
 
+    public Long getChatId() {
+        return chatId;
+    }
+
     public String getText() {
         return text;
     }
@@ -44,9 +48,5 @@ public class Content {
 
     public void setAudio(InputFile audio) {
         this.audio = audio;
-    }
-
-    public Long getChatId() {
-        return chatId;
     }
 }
