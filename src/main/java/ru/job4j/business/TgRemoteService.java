@@ -8,7 +8,6 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -76,7 +75,6 @@ public class TgRemoteService extends TelegramLongPollingBot {
             ex.printStackTrace();
         }
     }
-
 
     private void putDefaultAnswers() {
         moodResp.put("lost_sock", "Носки — это коварные создания. Но не волнуйся, второй обязательно найдётся!");
