@@ -5,7 +5,6 @@ import jakarta.annotation.PreDestroy;
 import org.springframework.stereotype.Service;
 import ru.job4j.content.Content;
 import ru.job4j.content.ContentProvider;
-
 import java.util.List;
 import java.util.Random;
 

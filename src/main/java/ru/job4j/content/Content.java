@@ -4,6 +4,7 @@ import org.telegram.telegrambots.meta.api.objects.InputFile;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
 
 public class Content {
+
     private final Long chatId;
     private String text;
     private InputFile photo;
@@ -12,14 +13,6 @@ public class Content {
 
     public Content(Long chatId) {
         this.chatId = chatId;
-    }
-
-    public Content(Long chatId, String text, InputFile photo, InlineKeyboardMarkup markup, InputFile audio) {
-        this.chatId = chatId;
-        this.text = text;
-        this.photo = photo;
-        this.markup = markup;
-        this.audio = audio;
     }
 
     public Long getChatId() {

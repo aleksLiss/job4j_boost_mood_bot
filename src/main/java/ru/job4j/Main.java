@@ -5,7 +5,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
-import ru.job4j.content.Content;
 import ru.job4j.telegramm.api.TelegramBotService;
 
 @SpringBootApplication
@@ -18,7 +17,6 @@ public class Main {
     public CommandLineRunner initTelegramApi(ApplicationContext context) {
         return args -> {
             var bot = context.getBean(TelegramBotService.class);
-            bot.receive(new Content());
         };
     }
 }
