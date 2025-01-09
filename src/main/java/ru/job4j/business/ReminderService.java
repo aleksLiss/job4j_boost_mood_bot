@@ -6,7 +6,6 @@ import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.Message;
 import ru.job4j.model.User;
 import ru.job4j.repository.UserRepository;
 
@@ -14,11 +13,10 @@ import ru.job4j.repository.UserRepository;
 public class ReminderService implements BeanNameAware {
 
     private String beanName;
-    private final TgRemoteService tgRemoteService;
     private final UserRepository userRepository;
 
-    public ReminderService(TgRemoteService tgRemoteService, UserRepository userRepository) {
-        this.tgRemoteService = tgRemoteService;
+    public ReminderService(String beanName, UserRepository userRepository) {
+        this.beanName = beanName;
         this.userRepository = userRepository;
     }
 
@@ -28,7 +26,6 @@ public class ReminderService implements BeanNameAware {
             SendMessage message = new SendMessage();
             message.setChatId(user.getChatId());
             message.setText("Ping");
-            tgRemoteService.sendMessage(message);
         }
     }
 
