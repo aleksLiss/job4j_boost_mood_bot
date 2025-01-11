@@ -1,50 +1,40 @@
 package ru.job4j.business;
 
-import jakarta.annotation.PostConstruct;
-import jakarta.annotation.PreDestroy;
-import org.springframework.beans.factory.BeanNameAware;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.stereotype.Component;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
+import org.springframework.stereotype.Service;
+import ru.job4j.content.Content;
 import ru.job4j.model.User;
-import ru.job4j.repository.UserRepository;
+import ru.job4j.repository.MoodLogRepository;
+import ru.job4j.telegramm.api.SentContent;
 
-@Component
-public class ReminderService implements BeanNameAware {
+import java.time.LocalDate;
+import java.time.ZoneId;
 
-    private String beanName;
-    private final UserRepository userRepository;
+@Service
+public class ReminderService {
 
-    public ReminderService(String beanName, UserRepository userRepository) {
-        this.beanName = beanName;
-        this.userRepository = userRepository;
+    private final SentContent sentContent;
+    private final MoodLogRepository moodLogRepository;
+    private final TgUI tgUI;
+
+    public ReminderService(SentContent sentContent, MoodLogRepository moodLogRepository, TgUI tgUI) {
+        this.sentContent = sentContent;
+        this.moodLogRepository = moodLogRepository;
+        this.tgUI = tgUI;
     }
 
-    @Scheduled(fixedRateString = "${remind.period}")
-    public void ping() {
-        for (User user : userRepository.findAll()) {
-            SendMessage message = new SendMessage();
-            message.setChatId(user.getChatId());
-            message.setText("Ping");
+    @Scheduled(fixedRateString = "${recommendation.alert.period}")
+    public void remindUser() {
+        long startOfDay = LocalDate
+                .now()
+                .atStartOfDay(ZoneId.systemDefault())
+                .toInstant()
+                .toEpochMilli();
+        for (User user : moodLogRepository.findUsersWhoDidNotVoteToday(startOfDay)) {
+            Content content = new Content(user.getChatId());
+            content.setText("Как настроение?");
+            content.setMarkup(tgUI.buildButtons());
+            sentContent.sent(content);
         }
-    }
-
-    @PostConstruct
-    public void init() {
-        System.out.println("Bean is going through @PostConstruct init.");
-    }
-
-    @PreDestroy
-    public void destroy() {
-        System.out.println("Bean will be destroyed via @PreDestroy.");
-    }
-
-    @Override
-    public void setBeanName(String name) {
-        this.beanName = name;
-    }
-
-    public void displayBeanName() {
-        System.out.println(beanName);
     }
 }

@@ -22,6 +22,9 @@ public class MoodLog {
 
     private long createdAt;
 
+    public MoodLog() {
+    }
+
     public MoodLog(User user, Mood mood, long createdAt) {
         this.user = user;
         this.mood = mood;
