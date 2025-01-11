@@ -2,14 +2,12 @@ package ru.job4j.business;
 
 import org.springframework.stereotype.Service;
 import ru.job4j.content.Content;
-import ru.job4j.model.MoodLog;
-import ru.job4j.model.User;
+import ru.job4j.model.*;
 import ru.job4j.recommedations.RecommendationEngine;
-import ru.job4j.repository.AchievementRepository;
-import ru.job4j.repository.MoodLogRepository;
-import ru.job4j.repository.UserRepository;
+import ru.job4j.repository.*;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
@@ -22,6 +20,7 @@ public class MoodService {
     private final RecommendationEngine recommendationEngine;
     private final UserRepository userRepository;
     private final AchievementRepository achievementRepository;
+    private final MoodRepository moodRepository;
     private final DateTimeFormatter formatter = DateTimeFormatter
             .ofPattern("dd-MM-yyyy HH:mm")
             .withZone(ZoneId.systemDefault());
@@ -29,23 +28,41 @@ public class MoodService {
     public MoodService(MoodLogRepository moodLogRepository,
                        RecommendationEngine recommendationEngine,
                        UserRepository userRepository,
-                       AchievementRepository achievementRepository) {
+                       AchievementRepository achievementRepository,
+                       MoodRepository moodRepository) {
         this.moodLogRepository = moodLogRepository;
         this.recommendationEngine = recommendationEngine;
         this.userRepository = userRepository;
         this.achievementRepository = achievementRepository;
+        this.moodRepository = moodRepository;
     }
 
     public Content chooseMood(User user, Long moodId) {
+        moodRepository.findById(moodId)
+                .ifPresent(value -> moodLogRepository.save(new MoodLog(user, value, System.currentTimeMillis())));
         return recommendationEngine.recommendFor(user.getChatId(), moodId);
     }
 
     public Optional<Content> weekMoodLogCommand(long chatId, Long clientId) {
-        return Optional.of(new Content(chatId));
+        List<MoodLog> logs = filteredMoodLogList(clientId)
+                .stream()
+                .filter(moodLog -> LocalDateTime
+                        .ofInstant(Instant
+                                .ofEpochSecond(moodLog.getCreatedAt()), ZoneId.systemDefault()
+                        ).isBefore(LocalDateTime.now().minusDays(7)))
+                .toList();
+        return Optional.of(new Content(chatId, formatMoodLogs(logs, "week moods log")));
     }
 
     public Optional<Content> monthMoodLogCommand(long chatId, Long clientId) {
-        return Optional.of(new Content(chatId));
+        List<MoodLog> logs = filteredMoodLogList(clientId)
+                .stream()
+                .filter(moodLog -> LocalDateTime
+                        .ofInstant(Instant
+                                .ofEpochSecond(moodLog.getCreatedAt()), ZoneId.systemDefault()
+                        ).isBefore(LocalDateTime.now().minusDays(30)))
+                .toList();
+        return Optional.of(new Content(chatId, formatMoodLogs(logs, "month moods log")));
     }
 
     private String formatMoodLogs(List<MoodLog> logs, String title) {
@@ -65,6 +82,37 @@ public class MoodService {
     }
 
     public Optional<Content> awards(long chatId, Long clientId) {
-        return Optional.of(new Content(chatId));
+        List<Achievement> awards = achievementRepository
+                .findAll()
+                .stream()
+                .filter(achievement -> achievement
+                        .getUser()
+                        .getId()
+                        .equals(clientId))
+                .toList();
+        StringBuilder awardsString = new StringBuilder();
+        if (!awards.isEmpty()) {
+            awardsString.append("Awards list: \n");
+            awards.forEach(achievement -> {
+                String formattedDAte = formatter.format(Instant.ofEpochSecond(achievement.getCreateAt()));
+                awardsString
+                        .append(formattedDAte)
+                        .append(": ")
+                        .append(achievement.getAward().getTitle())
+                        .append("\n")
+                        .append("description: ")
+                        .append(achievement.getAward().getDescription());
+            });
+        } else {
+            awardsString.append("You have not yet earned your awards");
+        }
+        return Optional.of(new Content(chatId, awardsString.toString()));
+    }
+
+    private List<MoodLog> filteredMoodLogList(Long clientId) {
+        return moodLogRepository
+                .findAll()
+                .stream()
+                .filter(moodLog -> moodLog.getId().equals(clientId)).toList();
     }
 }

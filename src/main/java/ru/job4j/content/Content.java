@@ -15,6 +15,11 @@ public class Content {
         this.chatId = chatId;
     }
 
+    public Content(Long chatId, String text) {
+        this.chatId = chatId;
+        this.text = text;
+    }
+
     public Long getChatId() {
         return chatId;
     }
