@@ -1,7 +1,9 @@
 package ru.job4j.business;
 
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import ru.job4j.content.Content;
+import ru.job4j.event.MoodLogEvent;
 import ru.job4j.model.*;
 import ru.job4j.recommedations.RecommendationEngine;
 import ru.job4j.repository.*;
@@ -24,22 +26,29 @@ public class MoodService {
     private final DateTimeFormatter formatter = DateTimeFormatter
             .ofPattern("dd-MM-yyyy HH:mm")
             .withZone(ZoneId.systemDefault());
+    private final ApplicationEventPublisher applicationEventPublisher;
 
     public MoodService(MoodLogRepository moodLogRepository,
                        RecommendationEngine recommendationEngine,
                        UserRepository userRepository,
                        AchievementRepository achievementRepository,
-                       MoodRepository moodRepository) {
+                       MoodRepository moodRepository,
+                       ApplicationEventPublisher applicationEventPublisher) {
         this.moodLogRepository = moodLogRepository;
         this.recommendationEngine = recommendationEngine;
         this.userRepository = userRepository;
         this.achievementRepository = achievementRepository;
         this.moodRepository = moodRepository;
+        this.applicationEventPublisher = applicationEventPublisher;
     }
 
     public Content chooseMood(User user, Long moodId) {
         moodRepository.findById(moodId)
-                .ifPresent(value -> moodLogRepository.save(new MoodLog(user, value, System.currentTimeMillis())));
+                .ifPresent(value -> {
+                    MoodLog moodLog = new MoodLog(user, value, System.currentTimeMillis());
+                    applicationEventPublisher.publishEvent(new MoodLogEvent(this, moodLog));
+                    moodLogRepository.save(moodLog);
+                });
         return recommendationEngine.recommendFor(user.getChatId(), moodId);
     }
 
